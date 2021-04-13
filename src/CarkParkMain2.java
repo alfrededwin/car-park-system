@@ -58,9 +58,7 @@ public class CarkParkMain2 {
         threads[6] = new Thread(groundArrival, "Ground South gate entry");
         threads[7] = new Thread(groundDeparture, "Ground South gate exit");
 
-
-
-
+        
         // create some vehciles for first floor gates
         Queue<Vehicle> carQueue2 = new LinkedList<Vehicle>();
         Queue<Vehicle> vanQueue2 = new LinkedList<Vehicle>();
