@@ -23,25 +23,19 @@ public class Arrival implements Runnable {
     public void run() {
 
         // First Preference to Car.
-        //if (carQueue.size() > 0) {
             for (int i=0; i<carQueue.size(); i++) {
                 this.carParkManager.allowParkedVehicle(carQueue.poll(), floor);
             }
-       // }
 
         // Second Preference to Van.
-        //if (vanQueue.size() > 0) {
             for (int i=0; i<vanQueue.size(); i++) {
                 this.carParkManager.allowParkedVehicle(vanQueue.poll(), floor);
             }
-       // }
 
         // Last Preference to Motorbike
-        //if (motorbikeQueue.size() > 0) {
             for (int i=0; i<motorbikeQueue.size(); i++) {
                 this.carParkManager.allowParkedVehicle(motorbikeQueue.poll(), floor);
             }
-        //}
     }
 
 

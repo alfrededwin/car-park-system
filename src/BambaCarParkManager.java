@@ -18,19 +18,21 @@ public class BambaCarParkManager implements CarParkManager{
 
 	// Concurrency Implementation, Begin.
 
-	private int groundFloorAvailableLots = CarParkManager.MAX_GROUND_FLOOR_AVAILABLE_LOT;
-	private int firstFloorAvailableLots = CarParkManager.MAX_FIRST_FLOOR_AVAILABLE_LOT;
-	private int upperFloorAvailableLots = CarParkManager.MAX_SECOND_FLOOR_AVAILABLE_LOT;
+	// Number of Slot available in GROUND FLOOR, FIRST FLOOR, UPPER FLOOR.
+	public static final int MAX_GROUND_FLOOR_AVAILABLE_LOT = 80 * 3; // Maximum Number of Parking Lots in Ground Floor.
+	public static final int MAX_FIRST_FLOOR_AVAILABLE_LOT = 60 * 3; // Maximum Number of Parking Lots in First Floor.
+	public static final int MAX_SECOND_FLOOR_AVAILABLE_LOT = 70 * 3; // Maximum Number of Parking Lots in Upper Floor
+
+	// Assign Maximum Available Parking Lots to particular Floors.
+	private int groundFloorAvailableLots = MAX_GROUND_FLOOR_AVAILABLE_LOT;
+	private int firstFloorAvailableLots = MAX_FIRST_FLOOR_AVAILABLE_LOT;
+	private int upperFloorAvailableLots = MAX_SECOND_FLOOR_AVAILABLE_LOT;
 
 	private Queue<Vehicle> groundFloorParkedVehicle = new LinkedList<Vehicle>();
 	private Queue<Vehicle> firstFloorParkedVehicle = new LinkedList<Vehicle>();
 	private Queue<Vehicle> upperFloorParkedVehicle = new LinkedList<Vehicle>();
 
-	// Queue to handle vehicle selection using FIFO.
-	 private Queue<Vehicle> carQueue = new LinkedList<Vehicle>();
-	 private Queue<Vehicle> vanQueue = new LinkedList<Vehicle>();
-	 private Queue<Vehicle> motorbikeQueue = new LinkedList<Vehicle>();
-
+	// Available Parking Lifts in the Car Park.
 	private int ParkingLifts = 12;
 
 	// Concurrency Implementation, End.
@@ -59,170 +61,6 @@ public class BambaCarParkManager implements CarParkManager{
 		listOfVehicle.add(obj);
 	}
 
-	// Park Vehicle in a parking lot.
-	public synchronized void allowParkedVehicle(Vehicle obj, int floor) {
-		boolean parked = false;
-
-		// Check for available parking lots from the respective floors.
-		while ((floor == GROUND_LEVEL && firstFloorAvailableLots == 0)
-				|| (floor == FIRST_LEVEL && firstFloorAvailableLots == 0)
-				|| (floor == SECOND_LEVEL && upperFloorAvailableLots == 0)) {
-			try {
-				// Wait for 5 seconds
-				System.out.println("Waiting at G Entry Point ");
-				wait(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Check for available parking lots from the First Floor.
-		while (floor == FIRST_LEVEL && (groundFloorAvailableLots >= obj.getParkingUnit())) {
-			try {
-				System.out.println("Waiting at F Entry Point ");
-//				System.out.println("wait at Entry: floor-"+floor+" gfa-"+groundFloorAvailableSlots/3.0+" ffa-"+firstFloorAvailableSlots/3.0+" sfa-"+secondFloorAvailableSlots/3.0);
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Check for available parking lots from the Upper Floor.
-		while (floor == SECOND_LEVEL &&
-				(groundFloorAvailableLots >= obj.getParkingUnit() || firstFloorAvailableLots >= obj.getParkingUnit() || ParkingLifts == 0)) {
-			try {
-				System.out.println("Waiting at S Entry Point ");
-//				System.out.println("wait at Entry: floor-"+floor+" gfa-"+groundFloorAvailableSlots/3.0+" ffa-"+firstFloorAvailableSlots/3.0+" sfa-"+secondFloorAvailableSlots/3.0);
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Allow Cars & Vans to all Floors
-		if (obj instanceof Car || obj instanceof Van) {
-			// First Allow the Vehicles to the Ground Floor. Then if the ground is full, admit to other floors.
-			if (groundFloorAvailableLots >= obj.getParkingUnit()) {
-				groundFloorAvailableLots -= obj.getParkingUnit();
-				groundFloorParkedVehicle.offer(obj);
-//				System.out.println("-----------PARKED CAR OR VAN IN GROUND FLOOR-----------------");
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Ground Floor.");
-				System.out.println("-------------------------------------------------------------");
-				parked = true;
-			} else if (firstFloorAvailableLots >= obj.getParkingUnit()) {
-				firstFloorAvailableLots -= obj.getParkingUnit();
-				firstFloorParkedVehicle.offer(obj);
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the First Floor.");
-				parked = true;
-
-			} else if (upperFloorAvailableLots >= obj.getParkingUnit()) {
-				ParkingLifts--;
-				upperFloorAvailableLots -= obj.getParkingUnit();
-				upperFloorParkedVehicle.offer(obj);
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Upper Floor.");
-				ParkingLifts++;
-				parked = true;
-			}
-		}
-
-		// Motor Bike is allowed for GROUND FLOOR & FIRST FLOOR.
-		if (obj instanceof MotorBike) {
-			if (groundFloorAvailableLots>= obj.getParkingUnit()) {
-				groundFloorAvailableLots -= obj.getParkingUnit();
-				groundFloorParkedVehicle.offer(obj);
-//				System.out.println("-----------PARKED MOTORBIKE FROM " + Thread.currentThread().getName() +"-----------------");
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Ground Floor.");
-				System.out.println("------------------------------------------------------------");
-				parked = true;
-			} else if (firstFloorAvailableLots>= obj.getParkingUnit()) {
-				firstFloorAvailableLots -= obj.getParkingUnit();
-				firstFloorParkedVehicle.offer(obj);
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the First Floor.");
-				parked = true;
-			}
-
-			if (parked) {
-//				this.addVehicle(obj);
-				System.out.println("-----------SUMMARY OF AVAILABLE PARKING LOTS-----------------");
-//				this.addVehicle(obj);
-				System.out.println("Ground Floor available parking lots : " + groundFloorAvailableLots/3.0);
-				System.out.println("First Floor available parking lots : " + firstFloorAvailableLots/3.0);
-				System.out.println("Upper Floor available parking lots : " + upperFloorAvailableLots/3.0);
-
-				System.out.println("-------------------------------------------------------------");
-				parked = true;
-			}
-
-			notifyAll();
-		}
-	}
-
-	// Exit Vehicle
-	public synchronized void exitParkedVehicle(int floor) {
-		boolean parked = false;
-		int totalAvailableParkingLots = groundFloorAvailableLots + firstFloorAvailableLots + upperFloorAvailableLots;
-		int TOTAL_PARKING_LOTS = MAX_GROUND_FLOOR_AVAILABLE_LOT + MAX_FIRST_FLOOR_AVAILABLE_LOT + MAX_SECOND_FLOOR_AVAILABLE_LOT ;
-
-		while (totalAvailableParkingLots == TOTAL_PARKING_LOTS) {
-			try {
-				System.out.println("Waiting at Exit Point ");
-				wait(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Exit Vehicle from Ground Level.
-		if ((floor == GROUND_LEVEL && groundFloorAvailableLots < MAX_GROUND_FLOOR_AVAILABLE_LOT)) {
-			while (groundFloorAvailableLots < MAX_GROUND_FLOOR_AVAILABLE_LOT) {
-				Vehicle obj = groundFloorParkedVehicle.poll();
-				groundFloorAvailableLots += obj.getParkingUnit();
-
-//				System.out.println("-----------VEHICLES DEPARTED FROM GROUND FLOOR----------------");
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from Ground Floor");
-				System.out.println("--------------------------------------------------------------");
-				this.deleteVehicle(obj.getIdPlate());
-				parked = true;
-			}
-		}
-
-		// Exit Vehicle from First Floor,
-		if (floor == FIRST_LEVEL && firstFloorAvailableLots < MAX_FIRST_FLOOR_AVAILABLE_LOT) {
-			while (firstFloorAvailableLots < MAX_FIRST_FLOOR_AVAILABLE_LOT) {
-				Vehicle obj = firstFloorParkedVehicle.poll();
-				firstFloorAvailableLots += obj.getParkingUnit();
-
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from First Floor");
-				this.deleteVehicle(obj.getIdPlate());
-				parked = true;
-			}
-		}
-
-		// Exit Vehicle from Second Floor,
-		if (floor == SECOND_LEVEL && upperFloorAvailableLots < MAX_SECOND_FLOOR_AVAILABLE_LOT) {
-			while (upperFloorAvailableLots < MAX_SECOND_FLOOR_AVAILABLE_LOT) {
-				ParkingLifts--;
-				Vehicle obj = upperFloorParkedVehicle.poll();
-				upperFloorAvailableLots += obj.getParkingUnit();
-
-				System.out.println(Thread.currentThread().getName());
-				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from Upper Floor");
-				this.deleteVehicle(obj.getIdPlate());
-				ParkingLifts++;
-				parked = true;
-			}
-		}
-
-		notifyAll();
-	}
-
 	public void setGroundFloorAvailableSlots(int groundFloorAvailableSlots) {
 		this.groundFloorAvailableLots = groundFloorAvailableSlots;
 	}
@@ -247,39 +85,192 @@ public class BambaCarParkManager implements CarParkManager{
 		this.upperFloorParkedVehicle = secondFloorParkedVehicles;
 	}
 
+	// Park Vehicle in a parking lot.
+	public synchronized void allowParkedVehicle(Vehicle obj, int floor) {
+		boolean parked = false;
 
-//	public Queue<Vehicle> getCarQueue() {
-//		return carQueue;
-//	}
-//
-//	public Queue<Vehicle> getVanQueue() {
-//		return vanQueue;
-//	}
-//
-//	public Queue<Vehicle> getMotorbikeQueue() {
-//		return motorbikeQueue;
-//	}
+		// Check for available parking lots from the Upper Floor.
+		while (floor == SECOND_LEVEL &&
+				(groundFloorAvailableLots >= obj.getVehicleUnit() || firstFloorAvailableLots >= obj.getVehicleUnit() || ParkingLifts == 0)) {
+			try {
+				System.out.println("Waiting at S Entry Point ");
+				wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Check for available parking lots from the First Floor.
+		while (floor == FIRST_LEVEL && (groundFloorAvailableLots >= obj.getVehicleUnit())) {
+			try {
+				System.out.println("Waiting at F Entry Point ");
+				wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Check for available parking lots from the respective floors.
+		while ((floor == GROUND_LEVEL && firstFloorAvailableLots == 0)
+				|| (floor == FIRST_LEVEL && firstFloorAvailableLots == 0)
+				|| (floor == SECOND_LEVEL && upperFloorAvailableLots == 0)) {
+			try {
+				// Wait for 1 seconds
+				System.out.println("Waiting at G Entry Point ");
+				wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 
-	// Check Parking Lot for Vehicle Type.
-//	private boolean checkParkingLotforVehicleType(Vehicle vehicle, int lots) {
-//
-//		// Note: 1 Parking Lot is equal to 3 motor bike lots and a van need 2 main lot (6 motorbike lots)
-//
-//		if (vehicle instanceof Car) {
-//			return lots >= 3;
-//		}
-//
-//		if (vehicle instanceof Van) {
-//			return lots >=6;
-//		}
-//
-//		if (vehicle instanceof MotorBike) {
-//			return lots > 0;
-//		}
-//
-//		return false;
-//	}
+		// Allow Cars & Vans to all Floors
+		if (obj instanceof Car || obj instanceof Van) {
+			// First Allow the Vehicles to the Ground Floor. Then if the ground is full, admit to other floors.
+			if (groundFloorAvailableLots >= obj.getVehicleUnit()) {
+				groundFloorAvailableLots -= obj.getVehicleUnit();
+				groundFloorParkedVehicle.offer(obj);
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Ground Floor.");
+				System.out.println("-------------------------------------------------------------");
+				parked = true;
+			} else if (firstFloorAvailableLots >= obj.getVehicleUnit()) {
+				firstFloorAvailableLots -= obj.getVehicleUnit();
+				firstFloorParkedVehicle.offer(obj);
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the First Floor.");
+				System.out.println("-------------------------------------------------------------");
+				parked = true;
+
+			} else if (upperFloorAvailableLots >= obj.getVehicleUnit()) {
+				ParkingLifts--;
+				upperFloorAvailableLots -= obj.getVehicleUnit();
+				upperFloorParkedVehicle.offer(obj);
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Upper Floor.");
+				System.out.println("-------------------------------------------------------------");
+				ParkingLifts++;
+				parked = true;
+			}
+		}
+
+		// Motor Bike is allowed for GROUND FLOOR & FIRST FLOOR.
+		if (obj instanceof MotorBike) {
+			if (groundFloorAvailableLots >= obj.getVehicleUnit()) {
+				groundFloorAvailableLots -= obj.getVehicleUnit();
+				groundFloorParkedVehicle.offer(obj);
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the Ground Floor.");
+				System.out.println("------------------------------------------------------------");
+				parked = true;
+			} else if (firstFloorAvailableLots >= obj.getVehicleUnit()) {
+				firstFloorAvailableLots -= obj.getVehicleUnit();
+				firstFloorParkedVehicle.offer(obj);
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: "+ obj.getIdPlate() +" parked in the First Floor.");
+				System.out.println("-------------------------------------------------------------");
+				parked = true;
+			}
+
+			if (parked) {
+				this.addVehicle(obj);
+				System.out.println("-------SUMMARY OF AVAILABLE PARKING LOTS AFTER ARRIVAL(ENTRY) OF VEHICLES --------");
+				System.out.println("Ground Floor available parking lots : " + groundFloorAvailableLots/3.0);
+				System.out.println("First Floor available parking lots : " + firstFloorAvailableLots/3.0);
+				System.out.println("Upper Floor available parking lots : " + upperFloorAvailableLots/3.0);
+				System.out.println("-----------------------------------------------------------------------------------");
+			}
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			notifyAll();
+		}
+	}
+
+	// Exit Vehicle
+	public synchronized void exitParkedVehicle(int floor) {
+		boolean parked = false;
+		int totalAvailableParkingLots = groundFloorAvailableLots + firstFloorAvailableLots + upperFloorAvailableLots;
+		int TOTAL_PARKING_LOTS = MAX_GROUND_FLOOR_AVAILABLE_LOT + MAX_FIRST_FLOOR_AVAILABLE_LOT + MAX_SECOND_FLOOR_AVAILABLE_LOT;
+
+		while (totalAvailableParkingLots == TOTAL_PARKING_LOTS) {
+			try {
+				System.out.println("Waiting at Exit Point ");
+				wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Exit Vehicle from Ground Level.
+		if ((floor == GROUND_LEVEL && groundFloorAvailableLots < MAX_GROUND_FLOOR_AVAILABLE_LOT)) {
+			while (groundFloorAvailableLots < MAX_GROUND_FLOOR_AVAILABLE_LOT) {
+				Vehicle obj = groundFloorParkedVehicle.poll();
+				groundFloorAvailableLots += obj.getVehicleUnit();
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from Ground Floor");
+				System.out.println("--------------------------------------------------------------");
+				this.removeVehicle(obj.getIdPlate());
+				parked = true;
+			}
+		}
+
+		// Exit Vehicle from First Floor,
+		if (floor == FIRST_LEVEL && firstFloorAvailableLots < MAX_FIRST_FLOOR_AVAILABLE_LOT) {
+			while (firstFloorAvailableLots < MAX_FIRST_FLOOR_AVAILABLE_LOT) {
+				Vehicle obj = firstFloorParkedVehicle.poll();
+				firstFloorAvailableLots += obj.getVehicleUnit();
+
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from First Floor");
+				System.out.println("-------------------------------------------------------------");
+				this.removeVehicle(obj.getIdPlate());
+				parked = true;
+			}
+		}
+
+		// Exit Vehicle from Second Floor,
+		if (floor == SECOND_LEVEL && upperFloorAvailableLots < MAX_SECOND_FLOOR_AVAILABLE_LOT) {
+			while (upperFloorAvailableLots < MAX_SECOND_FLOOR_AVAILABLE_LOT) {
+				ParkingLifts--;
+				Vehicle obj = upperFloorParkedVehicle.poll();
+				upperFloorAvailableLots += obj.getVehicleUnit();
+
+				System.out.println(Thread.currentThread().getName());
+				System.out.println(obj.getVehicleType() + " with plate ID: " + obj.getIdPlate() + " has exited from Upper Floor");
+				System.out.println("-------------------------------------------------------------");
+				this.removeVehicle(obj.getIdPlate());
+				ParkingLifts++;
+				parked = true;
+			}
+		}
+
+		if (parked) {
+			System.out.println("-------SUMMARY OF AVAILABLE PARKING LOTS AFTER DEPARTURE(EXIT) OF VEHICLES --------");
+			System.out.println("Ground Floor available parking lots : " + groundFloorAvailableLots/3.0);
+			System.out.println("First Floor available parking lots : " + firstFloorAvailableLots/3.0);
+			System.out.println("Upper Floor available parking lots : " + upperFloorAvailableLots/3.0);
+			System.out.println("-----------------------------------------------------------------------------------");
+		}
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		notifyAll();
+	}
+
+
+	@Override
+	public void removeVehicle(String IdPlate) {
+		listOfVehicle.removeIf(item -> item.getIdPlate().equals(IdPlate));
+	}
 
 	// Concurrency Implementation, End.
 	

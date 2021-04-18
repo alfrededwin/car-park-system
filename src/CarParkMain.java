@@ -6,7 +6,7 @@ import java.util.Queue;
 
 public class CarParkMain {
 
-    // BambaCarParkManager Object
+    // Bamba Car Park Manager Object
     private static BambaCarParkManager bambaCarParkManager = BambaCarParkManager.getInstance();
 
     public static void main(String[] args) {
@@ -27,7 +27,7 @@ public class CarParkMain {
        vanQueue.offer(new Van("VAN-002", "Pajero", "M2", dateTime, 24.9));
 
        motorbikeQueue.offer(new MotorBike("BIKE-001", "Royal", "Enfield", dateTime, "100-CC"));
-        motorbikeQueue.offer(new MotorBike("BIKE-002", "Royal", "Enfield", dateTime, "100-CC"));
+//       motorbikeQueue.offer(new MotorBike("BIKE-002", "Royal", "Enfield", dateTime, "100-CC"));
 
        // Implement Runnable
        Runnable arrival = new Arrival(bambaCarParkManager, carQueue, vanQueue, motorbikeQueue, CarParkManager.GROUND_LEVEL);
@@ -55,13 +55,6 @@ public class CarParkMain {
 
         threads[6] = new Thread(arrival, "Ground Floor South Entry Point");
         threads[7] = new Thread(departure, "Ground Floor South Exit Point");
-
-        // Handling Threads for Entry & Exit Point in First Level.
-//        threads[8] = new Thread(arrival, "First Level West Entry Point");
-//        threads[9] = new Thread(arrival, "First Level West Exit Point");
-//
-//        threads[10] = new Thread(departure, "First Level East Entry Point");
-//        threads[11] = new Thread(departure, "First Level East Exit Point");
 
         // Start All above Threads
         for (Thread thread: threads) {

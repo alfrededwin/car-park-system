@@ -1,10 +1,10 @@
-// Car Park Main Class 2 to show the implementation of Concurrency for the First Floor.
+// Car Park Main Class 3 to show the implementation of Concurrency for the Upper/Second Floor.
 
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class CarkParkMain2 {
+public class CarParkMain3 {
     private static BambaCarParkManager bambaCarParkManager =  BambaCarParkManager.getInstance();
 
     public static void main(String[] args) {
@@ -16,13 +16,20 @@ public class CarkParkMain2 {
 
         DateTime dateTime = new DateTime(2021 , 4 , 13, 22 , 51 , 10);
 
-        // set Ground floor parking lot to full in order to put vehicles to First Floor.
+        // set Ground floor & First Floor parking lot to full in order to put vehicles to Upper Floor.
         bambaCarParkManager.setGroundFloorAvailableSlots(0);
-        Queue<Vehicle> groundVehicleQueue = new LinkedList<Vehicle>();
+        Queue<Vehicle> GFloorVehicleQueue = new LinkedList<Vehicle>();
         for (int i = 0; i < BambaCarParkManager.MAX_GROUND_FLOOR_AVAILABLE_LOT; i += 3) {
-            groundVehicleQueue.offer(new Car("car-01"+i, "Toyota", "Premio", dateTime, 4, Color.BLUE));
+            GFloorVehicleQueue.offer(new Car("car-01"+i, "BMW", "BWB", dateTime, 4, Color.BLUE));
         }
-        bambaCarParkManager.setGroundFloorParkedVehicles(groundVehicleQueue);
+        bambaCarParkManager.setGroundFloorParkedVehicles(GFloorVehicleQueue);
+
+        bambaCarParkManager.setFirstFloorAvailableSlots(0);
+        Queue<Vehicle> FFloorVehicleQueue = new LinkedList<Vehicle>();
+        for (int i = 0; i < BambaCarParkManager.MAX_FIRST_FLOOR_AVAILABLE_LOT; i += 3) {
+            FFloorVehicleQueue.offer(new Car("carF-01"+i, "BENZ", "A5", dateTime, 4, Color.BLUE));
+        }
+        bambaCarParkManager.setFirstFloorParkedVehicles(FFloorVehicleQueue);
 
         // Adding Vehicles to Queue.
         carQueue.offer(new Car("CAR-001", "Toyota", "Premio", dateTime, 4, Color.BLACK));
@@ -36,7 +43,7 @@ public class CarkParkMain2 {
 
         // Implement Runnable for Ground Floor
         Runnable groundArrival = new Arrival(bambaCarParkManager, carQueue, vanQueue, motorbikeQueue, CarParkManager.GROUND_LEVEL);
-        Runnable groundDeparture = new Departure(bambaCarParkManager, (carQueue.size() + vanQueue.size() + motorbikeQueue.size()), CarParkManager.GROUND_LEVEL);
+        Runnable groundDeparture = new Departure(bambaCarParkManager, (GFloorVehicleQueue.size() +  carQueue.size() + vanQueue.size() + motorbikeQueue.size()), CarParkManager.GROUND_LEVEL + 1000);
 
         // Implement Threads
         Thread[] threads = new Thread[45];
@@ -75,7 +82,7 @@ public class CarkParkMain2 {
 
         // Implement Runnable for First Floor
         Runnable firstArrival = new Arrival(bambaCarParkManager, carQueueFirstFloor, vanQueueFirstFloor, motorbikeQueueFirstFloor, CarParkManager.FIRST_LEVEL);
-        Runnable firstDeparture = new Departure(bambaCarParkManager, (carQueueFirstFloor.size() + vanQueueFirstFloor.size() + motorbikeQueueFirstFloor.size()), CarParkManager.FIRST_LEVEL);
+        Runnable firstDeparture = new Departure(bambaCarParkManager, (FFloorVehicleQueue.size() + carQueueFirstFloor.size() + vanQueueFirstFloor.size() + motorbikeQueueFirstFloor.size()), CarParkManager.FIRST_LEVEL);
 
         // Handling Threads for Other Entry & Exit Point in First Level.
         threads[8] = new Thread(firstArrival, "First Floor West Entry Point 01");
@@ -84,6 +91,32 @@ public class CarkParkMain2 {
         threads[10] = new Thread(firstDeparture, "First Floor East Exit Point 01");
         threads[11] = new Thread(firstDeparture, "First Floor East Exit Point 02");
 
+
+        // Queue to handle vehicle selection using FIFO for Upper/Second Floor.
+        Queue<Vehicle> carQueueUpperFloor = new LinkedList<Vehicle>();
+        Queue<Vehicle> vanQueueUpperFloor = new LinkedList<Vehicle>();
+        Queue<Vehicle> motorbikeQueueUpperFloor = new LinkedList<Vehicle>();
+
+        // Adding Vehicles to Queue for Upper/Second Floor.
+        carQueueUpperFloor.offer(new Car("SC-1122", "Toyota", "Premio", dateTime, 4, Color.BLACK));
+        carQueueUpperFloor.offer(new Car("SC-5899", "Toyota", "Prado", dateTime, 4, Color.WHITE));
+
+        vanQueueUpperFloor.offer(new Van("SV-2100", "Ford", "Model2", dateTime, 12.5));
+
+        // Implement Runnable for Upper/Second Floor
+        Runnable upperArrival = new Arrival(bambaCarParkManager, carQueueUpperFloor, vanQueueUpperFloor, motorbikeQueueUpperFloor, CarParkManager.SECOND_LEVEL);
+        Runnable upperDeparture = new Departure(bambaCarParkManager, (carQueueUpperFloor.size() + vanQueueUpperFloor.size() + motorbikeQueueUpperFloor.size()),  CarParkManager.SECOND_LEVEL);
+
+        // Create 12 Threads for 12 Lifts for Upper Floor.
+        for (int i = 12; i < 24; i++) {
+            threads[i] = new Thread(upperArrival, "Upper Floor Lift " + (i-11) + " Entry Point");
+        }
+
+        for (int i = 24; i < 36; i++) {
+            threads[i] = new Thread(upperDeparture, "Upper Floor Lift " + (i-23) + " Exit Point");
+        }
+
+        // start all threads
         for (Thread thread: threads) {
             if (thread != null && !thread.isAlive()) {
 //                System.out.println(thread.getName());
@@ -92,5 +125,4 @@ public class CarkParkMain2 {
         }
 
     }
-
 }

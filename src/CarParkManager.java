@@ -9,11 +9,6 @@ public interface CarParkManager {
 
 	// Concurrency Implementation, BEGIN.
 
-	// Number of Slot available in GROUND FLOOR, FIRST FLOOR, UPPER FLOOR.
-	public static final int MAX_GROUND_FLOOR_AVAILABLE_LOT = 80 * 3;
-	public static final int MAX_FIRST_FLOOR_AVAILABLE_LOT = 60 * 3;
-	public static final int MAX_SECOND_FLOOR_AVAILABLE_LOT = 70 * 3;
-
 	// Multi Parking Floor Levels
 	public static final int GROUND_LEVEL = 0;
 	public static final int FIRST_LEVEL = 1;
@@ -25,8 +20,10 @@ public interface CarParkManager {
 	// exitVehicle
 	public void exitParkedVehicle(int floor);
 
-	// Concurrency Implementation, END.
+	// Remove a Vehicle
+	public void removeVehicle(String IdPlate);
 
+	// Concurrency Implementation, END.
 
 
 	public void addVehicle(Vehicle obj);

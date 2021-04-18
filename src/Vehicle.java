@@ -50,7 +50,7 @@ public abstract class Vehicle extends Object implements Comparable<Vehicle> {
 	}
 
 	// Concurrency Implementation, Begin.
-	public abstract int getParkingUnit();
+	public abstract int getVehicleUnit();
 	public abstract String getVehicleType();
 	// Concurrency Implementation, End.
 	

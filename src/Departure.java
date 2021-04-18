@@ -14,9 +14,6 @@ public class Departure implements Runnable {
 
     @Override
     public void run() {
-//        this.carParkManager.exitVehicle(carParkManager.GROUND_LEVEL);
-//        this.carParkManager.exitVehicle(carParkManager.FIRST_LEVEL);
-//        this.carParkManager.exitVehicle(carParkManager.SECOND_LEVEL);
         for (int i=0; i<noOfVehicles; i++) {
             this.carParkManager.exitParkedVehicle(floor);
         }

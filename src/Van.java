@@ -23,7 +23,7 @@ public class Van extends Vehicle {
 	}
 
 	// Concurrency Implementation, Begin.
-	public int getParkingUnit() { return ALLOWED_MOTOR_BIKE_UNIT; };
+	public int getVehicleUnit() { return ALLOWED_MOTOR_BIKE_UNIT; };
 	public String getVehicleType() { return this.vehicleType; };
 	// Concurrency Implementation, End.
 
